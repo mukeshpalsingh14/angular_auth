@@ -1,7 +1,12 @@
 ﻿using AngularAuthApi.context;
 using AngularAuthApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace AngularAuthApi.Controllers
 {
@@ -24,8 +29,10 @@ namespace AngularAuthApi.Controllers
             {
                 return NotFound(new { Message = "User Not Found!" });
             }
+            user.Token = CreateJWT(user);
             return Ok(new
             {
+                token= user.Token,
                 Message = "login Success"
             });
         }
@@ -70,6 +77,7 @@ namespace AngularAuthApi.Controllers
                 Message = "login Success"
             });
         }
+        [Authorize]
         [HttpGet("getUser")]
         public async Task<IActionResult> GetUserList()
         {
@@ -92,6 +100,33 @@ namespace AngularAuthApi.Controllers
         private async Task<bool> checkUserExist(string username)
         {
             return await _appDbContext.Users.AnyAsync(x => x.Email == username);
+        }
+        private string CreateJWT(User user)
+        {
+            try
+            {
+                var JwtToken = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes("mukeshmehay apne yaar dost ha kine ka badi key chaiadyi ha");
+                var identity = new ClaimsIdentity(new Claim[]
+                {
+                new Claim(ClaimTypes.Role,user.Role),
+                new Claim(ClaimTypes.Name,$"{user.FirstName}:{user.LastName}"),
+                });
+                var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = identity,
+                    Expires = DateTime.Now.AddDays(1),
+                    SigningCredentials = credentials,
+                };
+                var token = JwtToken.CreateToken(tokenDescriptor);
+                return JwtToken.WriteToken(token);
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
     }
 }
