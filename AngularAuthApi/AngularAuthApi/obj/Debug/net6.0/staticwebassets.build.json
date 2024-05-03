@@ -1,11 +1,19 @@
 {
   "Version": 1,
-  "Hash": "9NfxOvDrvNAThsOlokF25Zd8Gp3HO6Bm2MHKNyAkWOg=",
+  "Hash": "XBVkmx+CzOekJh6cw13PL/oYb7l+myfFHvmAQgDLn50=",
   "Source": "AngularAuthApi",
   "BasePath": "_content/AngularAuthApi",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "AngularAuthApi\\wwwroot",
+      "Source": "AngularAuthApi",
+      "ContentRoot": "E:\\study practice\\7April2024\\angular_auth\\AngularAuthApi\\AngularAuthApi\\wwwroot\\",
+      "BasePath": "_content/AngularAuthApi",
+      "Pattern": "**"
+    }
+  ],
   "Assets": []
 }

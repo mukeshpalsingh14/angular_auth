@@ -68,3 +68,4 @@ E:\study practice\7April2024\angular_auth\AngularAuthApi\AngularAuthApi\obj\Debu
 E:\study practice\7April2024\angular_auth\AngularAuthApi\AngularAuthApi\obj\Debug\net6.0\AngularAuthApi.pdb
 E:\study practice\7April2024\angular_auth\AngularAuthApi\AngularAuthApi\obj\Debug\net6.0\AngularAuthApi.genruntimeconfig.cache
 E:\study practice\7April2024\angular_auth\AngularAuthApi\AngularAuthApi\obj\Debug\net6.0\ref\AngularAuthApi.dll
+E:\study practice\7April2024\angular_auth\AngularAuthApi\AngularAuthApi\bin\Debug\net6.0\AngularAuthApi.staticwebassets.runtime.json

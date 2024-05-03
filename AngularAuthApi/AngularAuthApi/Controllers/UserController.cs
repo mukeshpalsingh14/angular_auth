@@ -1,12 +1,16 @@
 ﻿using AngularAuthApi.context;
 using AngularAuthApi.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.VisualBasic.FileIO;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace AngularAuthApi.Controllers
 {
@@ -15,9 +19,11 @@ namespace AngularAuthApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly AppDbContext _appDbContext;
-        public UserController(AppDbContext appDbContext)
+        public static IWebHostEnvironment _environment;
+        public UserController(AppDbContext appDbContext, IWebHostEnvironment environment)
         {
             _appDbContext = appDbContext;
+            _environment = environment;
         }
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] User userobj)
@@ -124,9 +130,111 @@ namespace AngularAuthApi.Controllers
             }
             catch (Exception ex)
             {
-
                 throw;
             }
+        }
+        [HttpPost("PostSingleFile")]
+        public async Task PostFileAsync(IFormFile fileData)
+        {
+            try
+            {
+                var fileDetails = new FileDetails()
+                {
+                    ID = 0,
+                    FileName = fileData.FileName,
+                    FileType = fileData.GetType().ToString(),
+                };
+                using (var stream = new MemoryStream())
+                {
+                    fileData.CopyTo(stream);
+                    fileDetails.FileData = stream.ToArray();
+                }
+                var result = _appDbContext.FileDetails.Add(fileDetails);
+                await _appDbContext.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        [HttpPost("FileUpload"), DisableRequestSizeLimit]
+        public async Task<string> UploadProfilePicture([FromForm(Name = "uploadedFile")] IFormFile file)
+        {
+
+            var folderName = Path.Combine("Resources", "ProfilePics");
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+
+            if (!Directory.Exists(filePath))
+            {
+                Directory.CreateDirectory(filePath);
+            }
+
+            var uniqueFileName = $"file_profilepic.png";
+            var dbPath = Path.Combine(folderName, uniqueFileName);
+
+            using (var fileStream = new FileStream(Path.Combine(filePath, uniqueFileName), FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+            return dbPath;
+        }
+
+
+
+        [HttpPost("file")]
+        public Task<FileUploadAPI> Post([FromForm] FileUploadAPI objFile)
+        {
+            FileUploadAPI obj = new FileUploadAPI();
+            try
+            {
+                obj.ImgID = objFile.ImgID;
+                obj.ImgName = "\\Upload\\" + objFile.files.FileName;
+                string uniqueFileName = UploadedFile(objFile);
+                if (objFile.files.Length > 0)
+                {
+                    if (!Directory.Exists(_environment.WebRootPath + "\\Upload"))
+                    {
+                        Directory.CreateDirectory(_environment.WebRootPath + "\\Upload\\");
+                    }
+                    using (FileStream filestream = System.IO.File.Create(_environment.WebRootPath + "\\Upload\\" + objFile.files.FileName))
+                    {
+                        objFile.files.CopyTo(filestream);
+                        filestream.Flush();
+                        //  return "\\Upload\\" + objFile.files.FileName;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            return Task.FromResult(obj);
+        }
+
+        private string UploadedFile(FileUploadAPI model)
+        {
+            string uniqueFileName = null;
+
+            if (model.files != null)
+            {
+                try
+                {
+                    string uploadsFolder = Path.Combine(_environment.WebRootPath, "images");
+                    uniqueFileName = Guid.NewGuid().ToString() + "_" + model.files.FileName;
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        model.files.CopyTo(fileStream);
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                    throw;
+                }
+            }
+            return uniqueFileName;
         }
     }
 }

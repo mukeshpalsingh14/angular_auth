@@ -10,6 +10,7 @@ namespace AngularAuthApi.context
 
         }
         public DbSet<User> Users { get; set; }
+        public DbSet<FileDetails> FileDetails { get; set; }
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
         //{
         //    //modelBuilder.Entity<User>().ToTable("users");
